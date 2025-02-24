@@ -20,7 +20,7 @@ const double windowHeight = 640;
 void setupWindow() {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     WidgetsFlutterBinding.ensureInitialized();
-    setWindowTitle('Provider Counter');
+    setWindowTitle('Provider Age Counter');
     setWindowMinSize(const Size(windowWidth, windowHeight));
     setWindowMaxSize(const Size(windowWidth, windowHeight));
     getCurrentScreen().then((screen) {
@@ -41,7 +41,6 @@ class Counter with ChangeNotifier {
     notifyListeners();
   }
 
-  // New decrement method:
   void decrement() {
     if (value > 0) {
       value -= 1;
@@ -56,7 +55,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Age Counter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -69,23 +68,58 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
   
+  // Helper method to get milestone data based on age
+  Map<String, dynamic> getMilestoneData(int age) {
+    if (age >= 0 && age <= 12) {
+      return {
+        'message': "You're a child!",
+        'backgroundColor': Colors.lightBlue[100],
+      };
+    } else if (age >= 13 && age <= 19) {
+      return {
+        'message': "Teenager time!",
+        'backgroundColor': Colors.lightGreen[100],
+      };
+    } else if (age >= 20 && age <= 30) {
+      return {
+        'message': "You're a young adult!",
+        'backgroundColor': Colors.yellow[100],
+      };
+    } else if (age >= 31 && age <= 50) {
+      return {
+        'message': "You're an adult now!",
+        'backgroundColor': Colors.orange[200],
+      };
+    } else {
+      return {
+        'message': "Golden years!",
+        'backgroundColor': Colors.grey[300],
+      };
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final counter = context.watch<Counter>();
+    final milestoneData = getMilestoneData(counter.value);
     return Scaffold(
+      backgroundColor: milestoneData['backgroundColor'],
       appBar: AppBar(
-        title: const Text('Flutter Demo Home Page'),
+        title: const Text('Age Counter'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Consumer<Counter>(
-              builder: (context, counter, child) => Text(
-                '${counter.value}',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+            Text(
+              'Age: ${counter.value}',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            // Display milestone message:
+            Text(
+              milestoneData['message'],
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             // Row with decrement and increment buttons:
