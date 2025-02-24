@@ -37,13 +37,23 @@ class Counter with ChangeNotifier {
   int value = 0;
 
   void increment() {
-    value += 1;
-    notifyListeners();
+    if (value < 99) {
+      value += 1;
+      notifyListeners();
+    }
   }
 
   void decrement() {
     if (value > 0) {
       value -= 1;
+      notifyListeners();
+    }
+  }
+  
+  //  set the age directly (used by the slider)
+  void setAge(int newAge) {
+    if (newAge != value) {
+      value = newAge;
       notifyListeners();
     }
   }
@@ -68,7 +78,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
   
-  // Helper method to get milestone data based on age
+  // milestone data based on age
   Map<String, dynamic> getMilestoneData(int age) {
     if (age >= 0 && age <= 12) {
       return {
@@ -97,32 +107,75 @@ class MyHomePage extends StatelessWidget {
       };
     }
   }
+
+  
+  Color getProgressBarColor(int age) {
+    if (age <= 33) {
+      return Colors.green;
+    } else if (age <= 67) {
+      return Colors.yellow;
+    } else {
+      return Colors.red;
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
     final counter = context.watch<Counter>();
     final milestoneData = getMilestoneData(counter.value);
+    
     return Scaffold(
       backgroundColor: milestoneData['backgroundColor'],
       appBar: AppBar(
         title: const Text('Age Counter'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               'Age: ${counter.value}',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
-            // Display milestone message:
             Text(
               milestoneData['message'],
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            // Row with decrement and increment buttons:
+            // Slider to set age from 0 to 99
+            Slider(
+              value: counter.value.toDouble(),
+              min: 0,
+              max: 99,
+              divisions: 99,
+              label: '${counter.value}',
+              onChanged: (double newValue) {
+                context.read<Counter>().setAge(newValue.toInt());
+              },
+            ),
+            const SizedBox(height: 16),
+            // Progress bar that reflects the age value
+            Container(
+              height: 20,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.grey[300],
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: counter.value / 99,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: getProgressBarColor(counter.value),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Row with decrement and increment buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
